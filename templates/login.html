@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/form.css') }}">
+    <title>AttendEz-Sign In</title>
+</head>
+<body>
+    <h1>Sign In</h1>
+    <form action="" method="POST" novalidate>
+        {{ form.csrf_token }}
+        <div class="form-group">
+            {{ form.email(class="form-control", placeholder="Enter Email") }}
+            {% for error in form.email.errors %}
+                <span class="text-danger">{{ error }}</span>
+            {% endfor %}
+        </div>
+        <div class="form-group">
+            {{ form.password(class="form-control", placeholder="Enter Password") }}
+            {% for error in form.password.errors %}
+                <span class="text-danger">{{ error }}</span>
+            {% endfor %}
+        </div>
+         {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for message in messages %}
+                    <p class="flash-message">{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% endwith %}
+        <input type="submit" value="Sign In">
+        <p class="signup-link">
+            Don't have an account? <a href="{{ url_for('register') }}">Sign Up</a>
+        </p>
+    </form>
+</body>
+</html>

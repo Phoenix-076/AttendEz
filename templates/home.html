@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+    <title>AttendEz-Manage your Attendance with Ease</title>
+</head>
+<body>
+    <div class="container">
+        Welcome to AttendEz
+        <br><br>
+        <p class="intro">
+            Effortlessly track attendance with our <br>
+            convenient online system.
+        </p>
+    </div>
+
+   <a href="{{ url_for('login') }}"> <button class="btn">Get Started</button></a>
+</body>
+</html>

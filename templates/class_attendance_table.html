@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Details</title>
+    <link rel="stylesheet" href="../static/css/class_attendance_table.css">
+</head>
+<style>
+    /* class_attendance_table.css */
+    body {
+        font-family: Arial, sans-serif;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+        color: black;
+    }
+
+    th {
+        background-color: green;
+    }
+
+    .present {
+        color: green;
+    }
+
+    .absent {
+        color: red;
+    }
+
+</style>
+<body>
+    <h1>Attendance for {{ class_name }} - {{ subject_name }} on {{ date }}</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Enrollment</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in attendance_data %}
+            <tr>
+                <td>{{ record.name }}</td>
+                <td>{{ record.enrollment }}</td>
+                <td class="{% if record.status == 'Present' %}present{% else %}absent{% endif %}">{{ record.status }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

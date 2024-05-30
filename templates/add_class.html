@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AttendEz-Class</title>
+    <link rel="stylesheet" href="../static/css/add_class.css">
+    <link rel="stylesheet" href="../static/css/head-n-foot.css">
+</head>
+<header class="header">
+    <div class="logo-div"><a href="/"><img src="../static/img/logo.png" class="logo-img"></a></div>
+    <nav>
+        <ul>
+            <li><a href="/dashboard"><img src="../static/img/home.png" alt=""></a></li>
+            <li><a href="/classes" class="active"><img src="../static/img/class.png" alt=""></a></li>
+            <li><a href="/cam"><img src="../static/img/cam.png" alt=""></a></li>
+            <li><img src="../static/img/user.png" alt="" onclick="openUserModal()"></li>
+        </ul>
+    </nav>
+</header>
+<!-- Modal structure -->
+<div id="userModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeUserModal()">&times;</span>
+        <p>Name: {{ user_name }}</p>
+        <p>Email: {{ user_email }}</p>
+        <a href="/logout"><button>Logout</button></a>
+    </div>
+</div>
+<body>
+  <form class="content" action="/add-class-module" method="post" id="class-module-form">
+    <!-- Dropdown for classes -->
+    <select name="class" class="class-select" id="class-select">
+      <option value="None">Select Class</option>
+      {% for class_data in classes %}
+          <option value="{{ class_data['code'] }}">{{ class_data['name'] }}</option>
+      {% endfor %}
+    </select>
+  
+    <!-- Dropdown for departments -->
+    <select name="department" class="department-select" id="department-select">
+      <option value="None">Select Department</option>
+      {% for dept_data in departments %}
+          <option value="{{ dept_data['code'] }}">{{ dept_data['name'] }}</option>
+      {% endfor %}
+    </select>
+  
+    <!-- Hidden inputs for selected class and department -->
+    <input type="hidden" name="selected_class" id="selected-class">
+    <input type="hidden" name="selected_department" id="selected-department">
+  
+     <button type="submit" class="add-btn">Add Class</button>
+  </form>
+  
+  <script>
+    // Add event listeners to the dropdowns
+    document.getElementById('class-select').addEventListener('change', function() {
+      var selectedClass = this.value;
+      document.getElementById('selected-class').value = selectedClass;
+    });
+  
+    document.getElementById('department-select').addEventListener('change', function() {
+      var selectedDepartment = this.value;
+      document.getElementById('selected-department').value = selectedDepartment;
+    });
+  </script>
+  
+</body>
+<footer class="footer">
+    <a href="https://www.gcit.edu.bt/"><img src="../static/img/college-logo.png" alt="College Logo" class="logo"></a>
+    <p>Gyalpozhing College of Information and Technology | 2024 | PRJ303 AI A</p>
+</footer>
+<script>
+    // Function to open the user modal
+    function openUserModal() {
+        document.getElementById('userModal').style.display = 'block';
+    }
+
+    // Function to close the user modal
+    function closeUserModal() {
+        document.getElementById('userModal').style.display = 'none';
+    }
+</script>
+</html>

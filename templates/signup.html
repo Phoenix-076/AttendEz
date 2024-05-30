@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/css/form.css">
+    <title>AttendEz-Sign Up</title>
+</head>
+<body>
+    <h1>Sign Up</h1>
+    <form action="/register" method="POST" novalidate>
+        {{ form.csrf_token }}  <!-- Include CSRF token -->
+        <div class="form-group">
+            {{ form.name(class="form-control", placeholder="Enter Name") }}  <!-- Display name input field with placeholder -->
+            {% for error in form.name.errors %}  <!-- Iterate over name field errors -->
+                <span class="text-danger">{{ error }}</span>  <!-- Display error message -->
+            {% endfor %}
+        </div>
+        <div class="form-group">
+            {{ form.email(class="form-control", placeholder="Enter Email") }}  <!-- Display email input field with placeholder -->
+            {% for error in form.email.errors %}  <!-- Iterate over email field errors -->
+                <span class="text-danger">{{ error }}</span>  <!-- Display error message -->
+            {% endfor %}
+        </div>
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for message in messages %}
+                    <p class="flash-message">{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% endwith %}
+        <div class="form-group">
+            {{ form.password(class="form-control", placeholder="Enter Password") }}  <!-- Display password input field with placeholder -->
+            {% for error in form.password.errors %}  <!-- Iterate over password field errors -->
+                <span class="text-danger">{{ error }}</span>  <!-- Display error message -->
+            {% endfor %}
+        </div>
+        <div class="form-group">
+            {{ form.confirm_password(class="form-control", placeholder="Confirm Password") }}  <!-- Display confirm password input field with placeholder -->
+            {% for error in form.confirm_password.errors %}  <!-- Iterate over confirm password field errors -->
+                <span class="text-danger">{{ error }}</span>  <!-- Display error message -->
+            {% endfor %}
+        </div>
+        <input type="submit" value="Sign Up">
+        <p class="signup-link">
+            Already have an account? <a href="{{ url_for('login') }}">Sign In</a>
+        </p>
+    </form>
+</body>
+</html>

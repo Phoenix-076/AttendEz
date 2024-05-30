@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AttendEz-View Attendance for each Class</title>
+    <link rel="stylesheet" href="../static/css/head-n-foot.css">
+    <link rel="stylesheet" href="../static/css/cam.css">
+</head>
+<header>
+    <div class="logo-div"><a href="/"><img src="../static/img/logo.png" class="logo-img"></a></div>
+    <nav>
+        <ul>
+            <li><a href="/dashboard"><img src="../static/img/home.png" alt=""></a></li>
+            <li><a href="/classes"><img src="../static/img/class.png" alt=""></a></li>
+            <li><a href="/cam" class="active"><img src="../static/img/cam.png" alt=""></a></li>
+            <li><img src="../static/img/user.png" alt="" onclick="openUserModal()"></li>
+        </ul>
+    </nav>
+</header>
+
+<!-- Modal structure -->
+<div id="userModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeUserModal()">&times;</span>
+        <p>Name: {{ user_name }}</p>
+        <p>Email: {{ user_email }}</p>
+        <a href="/logout"><button>Logout</button></a>
+    </div>
+</div>
+
+<body>
+    <div class="content">
+        {% if lecturer_classes %}
+        <!-- Dropdown for classes -->
+        <p class="message">Please select class to take attendance</p>
+        <select id="class-select" class="class-select">
+            <option value="None">Select Class</option>
+            {% for class_data in lecturer_classes %}
+            <option value="{{ class_data }}">{{ class_data }}</option>
+            {% endfor %}
+        </select>
+        <button id="start-button" class="start-btn">Start</button>
+        {% else %}
+        <div class="msg-box">
+            <p class="message">You don't have any classes. Add a class.</p>
+            <a href="/class-selection"><button class="add-btn">Add Class</button></a>
+        </div>
+        {% endif %}
+    </div>
+</body>
+<footer>
+    <a href="https://www.gcit.edu.bt/"><img src="../static/img/college-logo.png" alt="College Logo" class="logo"></a>
+    <p>Gyalpozhing College of Information and Technology | 2024 | PRJ303 AI A</p>
+</footer>
+<script>
+    // Function to open the user modal
+    function openUserModal() {
+        document.getElementById('userModal').style.display = 'block';
+    }
+
+    // Function to close the user modal
+    function closeUserModal() {
+        document.getElementById('userModal').style.display = 'none';
+    }
+
+    // Function to handle the start button click
+    document.getElementById('start-button').addEventListener('click', function() {
+        const selectedClass = document.getElementById('class-select').value;
+        if (selectedClass !== 'None') {
+            window.open(`/video_popup?class=${encodeURIComponent(selectedClass)}`, 'Video');
+        } else {
+            alert('Please select a class.');
+        }
+    });
+</script>
+</html>

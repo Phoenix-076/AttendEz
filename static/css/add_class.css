@@ -1,0 +1,43 @@
+body {
+    background-color: #504E9C;
+    background-size: cover;
+    text-align: center;
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    color: white;
+}
+
+.content {
+    margin: 20% auto;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    width: 30%; /* Set a fixed width for the white box */
+    text-align: center; /* Align text in the center */
+}
+
+.class-select, .department-select {
+    margin: 10px;
+    padding: 5px;
+    border: 1px solid #ccc; /* Add a border for the select elements */
+    border-radius: 5px;
+    width: 200px; /* Set a width for the select elements */
+}
+
+.buttons {
+    margin-top: 10px;
+}
+
+.add-btn {
+    background-color: #0BBA12; /* Blue color for buttons */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-right: 10px; /* Add margin between buttons */
+}
+
+#cancel-btn {
+    background-color: #FF0B0B; /* Red color for cancel button */
+}

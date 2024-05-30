@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AttendEz-View Attendance for each Class</title>
+    <link rel="stylesheet" href="../static/css/head-n-foot.css">
+    <link rel="stylesheet" href="../static/css/class_attendance.css">
+</head>
+<header>
+    <div class="logo-div"><a href="/"><img src="../static/img/logo.png" class="logo-img"></a></div>
+    <nav>
+        <ul>
+            <li><a href="/dashboard" class="active"><img src="../static/img/home.png" alt=""></a></li>
+            <li><a href="/classes"><img src="../static/img/class.png" alt=""></a></li>
+            <li><a href="/cam"><img src="../static/img/cam.png" alt=""></a></li>
+            <li><img src="../static/img/user.png" alt="" onclick="openUserModal()"></li>
+        </ul>
+    </nav>
+</header>
+
+<!-- Modal structure -->
+<div id="userModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeUserModal()">&times;</span>
+        <p>Name: {{ user_name }}</p>
+        <p>Email: {{ user_email }}</p>
+        <a href="/logout"><button>Logout</button></a>
+    </div>
+</div>
+
+<body>
+    <div class="heading">
+        <h2 class="class">{{ class_name }} ({{ subject_name }}) [Date {{date}}]</h2>
+    </div>
+    <br>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Enrollment</th>
+                <th>Status</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in attendance_data %}
+            <tr>
+                <td>{{ record.name }}</td>
+                <td>{{ record.enrollment }}</td>
+                <!-- Apply class based on status -->
+                <td class="{% if record.status == 'Present' %}present{% else %}absent{% endif %}">{{ record.status }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+<footer>
+    <a href="https://www.gcit.edu.bt/"><img src="../static/img/college-logo.png" alt="College Logo" class="logo"></a>
+    <p>Gyalpozhing College of Information and Technology | 2024 | PRJ303 AI A</p>
+</footer>
+<script>
+    // Function to open the user modal
+    function openUserModal() {
+        document.getElementById('userModal').style.display = 'block';
+    }
+
+    // Function to close the user modal
+    function closeUserModal() {
+        document.getElementById('userModal').style.display = 'none';
+    }
+</script>
+</html>

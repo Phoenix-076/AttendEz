@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/css/Class.css">
+    <link rel="stylesheet" href="../static/css/head-n-foot.css">
+    <title>AttendEz-Class</title>
+</head>
+<header class="header">
+    <div class="logo-div"><a href="/"><img src="../static/img/logo.png" class="logo-img"></a></div>
+    <nav>
+        <ul>
+            <li><a href="/dashboard"><img src="../static/img/home.png" alt=""></a></li>
+            <li><a href="/classes"  class="active"><img src="../static/img/class.png" alt=""></a></li>
+            <li><a href="/cam"><img src="../static/img/cam.png" alt=""></a></li>
+            <li><img src="../static/img/user.png" alt="" onclick="openUserModal()"></li>
+        </ul>
+    </nav>
+</header>
+<!-- Modal structure -->
+<div id="userModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeUserModal()">&times;</span>
+        <p>Name: {{ user_name }}</p>
+        <p>Email: {{ user_email }}</p>
+        <a href="/logout"><button>Logout</button></a>
+    </div>
+</div>
+<body>
+<div class="content">
+    {% if lecturer_classes %}
+    <!-- Dropdown for classes -->
+    <div class="classSection">
+        <div class="left-side">
+            <select id="class-select" class="class-select">
+                {% for class_data in lecturer_classes %}
+                <option value="{{ class_data }}">{{ class_data }}</option>
+                {% endfor %}
+            </select>
+            <div class="subject">{{ selected_department_name }}</div>
+        </div>
+        <a href="/class-selection"><button class="add-btn">Add Class</button></a>
+    </div>
+    <hr>
+    <!-- Table to display students -->
+    <table id="student-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Enrollment</th>
+                <th>Email</th>
+                <th>Gender</th>
+                <th>Phone Number</th>
+                <th>Year</th>
+                <th>Photo</th>
+                <!-- Add more headers as needed -->
+            </tr>
+        </thead>
+        <tbody id="student-table-body">
+            <!-- Table rows with data will be added dynamically here -->
+        </tbody>
+
+    </table>
+    {% else %}
+    <div class="msg-box">
+        <p class="message">You don't have any classes.Add class</p>
+        <a href="/class-selection"><button class="add-btn">Add Class</button></a>
+    </div>
+    
+    {% endif %}
+</div>
+<footer class="footer">
+    <a href="https://www.gcit.edu.bt/"><img src="../static/img/college-logo.png" alt="College Logo" class="logo"></a>
+    <p>Gyalpozhing College of Information and Technology | 2024 | PRJ303 AI A</p>
+</footer>
+</body>
+
+<script>
+    // Function to open the user modal
+    function openUserModal() {
+        document.getElementById('userModal').style.display = 'block';
+    }
+
+    // Function to close the user modal
+    function closeUserModal() {
+        document.getElementById('userModal').style.display = 'none';
+    }
+
+    // Function to fetch students based on the selected class
+    function getStudents() {
+    var selectedClass = document.getElementById('class-select').value;
+
+    // Send a POST request to the server to fetch students based on the selected class
+    fetch('/get-students', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: 'selected_class=' + selectedClass
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Extract students and selected department name from the response
+        var students = data.students;
+        var selectedDepartmentName = data.selected_department_name;
+
+        var studentTableBody = document.getElementById('student-table-body');
+        // Clear existing rows
+        studentTableBody.innerHTML = '';
+        // Add new rows for each student
+        students.forEach(student => {
+            var row = studentTableBody.insertRow();
+            row.insertCell(0).textContent = student.name;
+            row.insertCell(1).textContent = student.std_id;
+            row.insertCell(2).textContent = student.email;
+            row.insertCell(3).textContent = student.gender;
+            row.insertCell(4).textContent = student.phone;
+            row.insertCell(5).textContent = student.year;
+            // You can also add the photo here if needed
+            // Insert photo cell
+            var photoCell = row.insertCell(6);
+            var img = document.createElement('img');
+            img.src = `../static/std_images/${student.std_id}.JPG`; // Constructing the image path
+            img.alt = student.name; // Alt text for accessibility
+            img.style.width = '50px'; // Set the width of the image
+            img.style.height = '50px'; // Set the height of the image
+            photoCell.appendChild(img);
+        });
+
+        // Display the selected department name
+        var subjectParagraph = document.querySelector('.subject');
+        subjectParagraph.textContent = selectedDepartmentName;
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+    // Attach an event listener to the class select dropdown
+    document.getElementById('class-select').addEventListener('change', getStudents);
+
+    // Call getStudents initially to populate the table with default class
+    getStudents();
+</script>
+</html>

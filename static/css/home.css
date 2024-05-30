@@ -1,0 +1,35 @@
+body{
+  background-image: url("../img/bg.jpg");
+  background-size: cover;
+  text-align: center;
+  font-family: 'Inter', sans-serif;
+
+}
+.container{
+  font-size: 2.5em;
+  padding-top: 5%;
+  padding-bottom: 25%;
+}
+
+.intro{
+  font-size: 0.8em;
+}
+
+.btn{
+  color: white;
+  background-color: black;
+  border-radius: 25px;
+  width: 10%;
+  padding-top: 0.5%;
+  padding-bottom: 0.5%;
+}
+
+.btn:hover{
+  cursor: pointer;
+}
+
+.btn a{
+  text-decoration: none;
+  color: white;
+
+}

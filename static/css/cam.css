@@ -1,0 +1,109 @@
+body {
+    background-color: #504E9C;
+    background-size: cover;
+    text-align: center;
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    text-align: center;
+    color: white;
+    height: 100vh;
+}
+.content{
+    padding-top: 15%;
+    height: 55vh;
+    margin: auto;
+    width: 40%;
+    border:solid 1px white;
+}
+
+.message{
+    font-size: 2em;
+}
+
+/* 
+.container {
+    margin: 0 auto;
+    width: 90%;
+    margin-top: 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+.camera {
+    background-color: rgba(240, 240, 240, 0.5); 
+    flex: 1;
+    margin-right: 20px;
+    height: 100vh;
+}
+.profiles {
+    border-radius: 25px;
+    background-color: rgba(240, 240, 240, 0.5); 
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100vh;
+}
+.profiles-title {
+    padding-top: 70px;
+    text-align: center;
+    margin-bottom: 10px;
+    font-weight: bold;
+    font-size: 1.2em;
+}
+.profiles-list {
+    padding-top: 70px;
+
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+.profile {
+    text-align: center;
+}
+.profile img {
+    max-width: 10%;
+    height: auto;
+    border-radius: 50%;
+}
+.button-container {
+    margin-top: 20px;
+    text-align: center;
+}
+
+
+.class {
+    background-color: rgba(255, 255, 255, 0); 
+    width: 100px; 
+    padding: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+}
+
+.class:focus {
+    outline: none;
+    border-color: #007bff; 
+} */
+
+.class-select, .start-btn{
+    height: 30px;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+}
+
+.start-btn {
+    position: relative;
+    padding: 10px 20px;
+    background-color: #15a85f;
+    color: #fff;
+    height: 1cm;
+    
+}
+ 
+.start-btn:hover{
+    background-color: #fff;
+    color: green;
+    transition: 0.5s linear;
+}

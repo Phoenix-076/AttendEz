@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/css/head-n-foot.css">
+    <link rel="stylesheet" href="../static/css/dashboard.css">
+    <title>AttendEz-Dashboard</title>
+</head>
+<header>
+    <div class="logo-div"><a href="/"><img src="../static/img/logo.png" class="logo-img"></a></div>
+    <nav>
+        <ul>
+            <li><a href="/dashboard" class="active"><img src="../static/img/home.png" alt=""></a></li>
+            <li><a href="/classes"><img src="../static/img/class.png" alt=""></a></li>
+            <li><a href="/cam"><img src="../static/img/cam.png" alt=""></a></li>
+            <li><img src="../static/img/user.png" alt="" onclick="openUserModal()"></li>
+        </ul>
+    </nav>
+</header>
+
+<!-- Modal structure -->
+<div id="userModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeUserModal()">&times;</span>
+        <p>Name: {{ user_name }}</p>
+        <p>Email: {{ user_email }}</p>
+        <a href="/logout"><button class="logout-btn">Logout</button></a>
+    </div>
+</div>
+
+<body>
+    <div class="graph"></div>
+    <div class="heading">
+        <h2 class="title">Attendance Report</h2>
+        <input type="date" class="date" name="date">
+    </div>
+    <hr class="line">
+    <table id="attendance-table">
+        <thead>
+            <tr>
+                <th>Class</th>
+                <th>Module</th>
+                <th>Total number of students</th>
+                <th>No. of absent</th>
+                <th>No. of present</th>
+                <th>Average</th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody id="attendance-table-body">
+            <!-- JavaScript will populate this -->
+        </tbody>
+    </table>
+    <div id="no-attendance-message" class="no-attendance-message" style="display: none;">
+        <p>No attendance data available for the selected date for selected subject/subjects.</p>
+    </div>
+</body>
+<footer>
+    <a href="https://www.gcit.edu.bt/"><img src="../static/img/college-logo.png" alt="College Logo" class="logo"></a>
+    <p>Gyalpozhing College of Information and Technology | 2024 | PRJ303 AI A</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // Function to open the user modal
+    function openUserModal() {
+        document.getElementById('userModal').style.display = 'block';
+    }
+
+    // Function to close the user modal
+    function closeUserModal() {
+        document.getElementById('userModal').style.display = 'none';
+    }
+
+    // Function to fetch attendance data
+    document.querySelector('.date').addEventListener('change', function() {
+        let selectedDate = this.value;
+
+        // Convert the date format to match the database format (20-05-24)
+        let [year, month, day] = selectedDate.split('-');
+        selectedDate = `${day}-${month}-${year.slice(2)}`;
+
+        fetch(`/fetch_attendance?date=${selectedDate}`)
+            .then(response => response.json())
+            .then(data => {
+                // Update the table with the fetched data
+                updateAttendanceTable(data);
+            })
+            .catch(error => console.error('Error fetching attendance:', error));
+    });
+
+    function updateAttendanceTable(data) {
+        let tableBody = document.getElementById('attendance-table-body');
+        let graphContainer = document.querySelector('.graph');
+        let noAttendanceMessage = document.getElementById('no-attendance-message');
+        tableBody.innerHTML = ''; // Clear the existing rows
+        graphContainer.innerHTML = ''; // Clear the existing graph
+        noAttendanceMessage.style.display = 'none'; // Hide the no attendance message
+
+        let hasAttendanceData = false;
+
+        data.forEach(record => {
+            if (record.message) {
+                // If the record has a message, it means there's no attendance data
+                noAttendanceMessage.style.display = 'block'; // Show the no attendance message
+            } else {
+                hasAttendanceData = true;
+                let row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${record.class_name}</td>
+                    <td>${record.subject_name}</td>
+                    <td>${record.total_students}</td>
+                    <td>${record.total_students - record.present}</td>
+                    <td>${record.present}</td>
+                    <td>${record.average}</td>
+                    <td><button class="download-btn" data-class="${record.class_name}" data-subject="${record.subject_name}" data-date="${record.date}">Download</button></td>
+                    <td><button class="view-btn" data-class="${record.class_name}" data-subject="${record.subject_name}" data-date="${record.date}">View</button></td>
+                `;
+                tableBody.appendChild(row);
+            }
+        });
+
+        if (hasAttendanceData) {
+            // Generate the single bar graph
+            generateBarGraph(graphContainer, data);
+        } else {
+            graphContainer.innerHTML = ''; // Clear the graph container
+        }
+
+        // Add event listeners to the "View" buttons
+        document.querySelectorAll('.view-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const className = this.getAttribute('data-class');
+                const subjectName = this.getAttribute('data-subject');
+                const date = this.getAttribute('data-date');
+                window.location.href = `/view_attendance?class=${className}&subject=${subjectName}&date=${date}`;
+            });
+        });
+
+        // Add event listeners to the "Download" buttons
+        document.querySelectorAll('.download-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const className = this.getAttribute('data-class');
+                const subjectName = this.getAttribute('data-subject');
+                const date = this.getAttribute('data-date');
+                downloadPDF(className, subjectName, date);
+            });
+        });
+    }
+
+    function generateBarGraph(container, data) {
+        const canvas = document.createElement('canvas');
+        canvas.width = 400; // Adjust the width as needed
+        canvas.height = 200; // Adjust the height as needed
+        container.innerHTML = ''; // Clear the existing graph
+        container.appendChild(canvas);
+
+        const ctx = canvas.getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.map(record => record.class_name),
+                datasets: [
+                    {
+                        label: 'Absent',
+                        data: data.map(record => record.total_students - record.present),
+                        backgroundColor: 'red'
+                    },
+                    {
+                        label: 'Present',
+                        data: data.map(record => record.present),
+                        backgroundColor: 'green'
+                    }
+                ]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+
+    // Function to download PDF
+    function downloadPDF(className, subjectName, date) {
+    fetch(`/fetch_attendance_details?class=${className}&subject=${subjectName}&date=${date}`)
+        .then(response => response.text())
+        .then(htmlContent => {
+            // Create a temporary div element to hold the HTML content
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = htmlContent;
+
+            // Apply CSS styles directly within the <style> tag
+            tempDiv.innerHTML += `
+                <style>
+                    /* Add your CSS styles here */
+                    body {
+                        font-family: Arial, sans-serif;
+                    }
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-top: 20px;
+                    }
+                    th, td {
+                        border: 1px solid #ddd;
+                        padding: 8px;
+                        text-align: left;
+                        color: black;
+                    }
+                    th {
+                        background-color: #f2f2f2;
+                    }
+                    .present {
+                        color: green;
+                    }
+                    .absent {
+                        color: red;
+                    }
+                </style>
+            `;
+
+            // Generate PDF from the modified HTML content
+            html2pdf()
+                .from(tempDiv)
+                .set({
+                    margin: 1,
+                    filename: `Attendance-${className}-${subjectName}-${date}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2 },
+                    jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+                })
+                .save();
+        })
+        .catch(error => console.error('Error fetching attendance details:', error));
+}
+</script>
+</html>
+

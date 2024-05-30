@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/css/SClass.css">
+    <title>Class</title>
+</head>
+ <body>
+    <div class="header">
+    <div class="logo-div"><a href="/"><img src="../static/img/logo.png" class="logo-img"></a></div>
+        <a href="/logout"><button>Logout</button></a>
+    </div>
+    <div class="content">
+        <div class="dropdowns">
+           <select name="module" id="module-select">
+                <option value="">Select Module</option>
+                {% for subject_code in subject_codes %}
+                <option value="{{ subject_code }}">{{ subject_code }}</option>
+                {% endfor %}
+            </select>
+
+            <input type="date" class="date" name="date">
+            <button id="fetch-attendance-btn">Fetch Attendance</button>
+        </div>
+        <table id="attendance-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Enrollment</th>
+                    <th>Status</th>
+                    <th>Classes Taken</th>
+                    <th>Classes Attended</th>
+                    <th>Overall Average</th>
+                </tr>
+            </thead>
+            <tbody id="attendance-table-body">
+                <!-- Attendance data will be dynamically inserted here -->
+            </tbody>
+        </table>
+    </div>
+    <div class="footer">
+    <a href="https://www.gcit.edu.bt/"><img src="../static/img/college-logo.png" alt="College Logo" class="logo"></a>
+        <p>Gyalpozhing College of Information and Technology | 2024 | PRJ303 AI A</p>
+    </div>
+
+    <script>
+        document.getElementById('fetch-attendance-btn').addEventListener('click', () => {
+            const selectedModule = document.getElementById('module-select').value;
+            const selectedDate = document.querySelector('.date').value;
+
+            if (selectedModule && selectedDate) {
+                fetchAttendance(selectedModule, selectedDate);
+            } else {
+                alert('Please select a module and a date.');
+            }
+        });
+
+        function fetchAttendance(module, date) {
+            let [year, month, day] = date.split('-');
+            date = `${day}-${month}-${year.slice(2)}`;
+            fetch(`/fetch_student_attendance?class=${module}&date=${date}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                updateAttendanceTable(data);
+            })
+            .catch(error => {
+                console.error('Error fetching attendance:', error);
+            });
+        }
+
+        function updateAttendanceTable(data) {
+            const tableBody = document.getElementById('attendance-table-body');
+            tableBody.innerHTML = '';
+
+            if (data.error) {
+                // Display the error message
+                const errorRow = document.createElement('tr');
+                errorRow.innerHTML = `<td colspan="5">${data.error}</td>`;
+                tableBody.appendChild(errorRow);
+            } else if (Array.isArray(data)) {
+                data.forEach(student => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${student.name}</td>
+                        <td>${student.enrollment}</td>
+                        <td>${student.status}</td>
+                        <td>${student.total_class_taken}</td>
+                        <td>${student.classes_attended}</td>
+                        <td>${student.overall_average}%</td>
+
+                    `;
+                    tableBody.appendChild(row);
+                });
+            } else {
+                console.error('Unexpected data format:', data);
+            }
+        }
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../static/css/video_popup.css">
+    <title>AttendEz-Video Feed</title>
+</head>
+<body>
+    <div class="container">
+        <div class="video-feed">
+            <h1 id="class-heading">Video Feed</h1>
+            <img src="{{ url_for('video_feed') }}" width="640" height="480">
+            <img src="../static/img/cam.png">
+
+            <button id="stop-button" class="stop-button">Stop Recording</button>
+        </div>
+        <div class="predictions">
+            <h2 id="predictions-heading">Predicted People</h2>
+            <div id="predictions-container"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Extract the selected class from the URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const selectedClass = urlParams.get('class');
+
+        // Update the heading with the selected class
+        document.getElementById('predictions-heading').textContent = `Students Marked (${selectedClass})`;
+
+        document.getElementById('stop-button').addEventListener('click', function() {
+            window.close();
+        });
+
+        const displayedStudentIds = new Set(); // Set to keep track of displayed student IDs
+
+        async function fetchPredictions() {
+            const response = await fetch('/get_predictions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ selected_class: selectedClass })
+            });
+
+            const predictions = await response.json();
+            updatePredictions(predictions);
+        }
+
+        function updatePredictions(predictions) {
+            const container = document.getElementById('predictions-container');
+
+            predictions.forEach(prediction => {
+                if (!displayedStudentIds.has(prediction.std_id)) {
+                    displayedStudentIds.add(prediction.std_id);
+
+                    const personDiv = document.createElement('div');
+                    personDiv.classList.add('person');
+
+                    const img = document.createElement('img');
+                    img.src = `../static/std_images/${prediction.std_id}.JPG`;
+                    img.alt = prediction.name;
+                    img.classList.add('student-image'); // Add class to the image
+
+
+                    const nameDiv = document.createElement('div');
+                    nameDiv.textContent = prediction.name;
+                    personDiv.appendChild(img);
+                    personDiv.appendChild(nameDiv);
+                    container.appendChild(personDiv);
+                }
+            });
+        }
+
+        setInterval(fetchPredictions, 5000);  // Fetch predictions every 5 seconds
+    </script>
+</body>
+</html>

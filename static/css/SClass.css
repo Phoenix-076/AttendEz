@@ -1,0 +1,124 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #504E9C; /* body background color */
+    color: white;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.header {
+    background-color: white;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header .logo a {
+    margin: 65px;
+    color: black;
+    text-decoration: none;
+    font-size: 30px;
+    font-weight: bold;
+}
+
+.header button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: white;
+    color: black;
+    border: 2px solid #ccc;
+    border-radius: 25px;
+    cursor: pointer;
+}
+
+.content {
+    padding: 20px;
+    flex-grow: 1;
+}
+
+.dropdowns {
+    display: flex; /* Arrange dropdowns in a row */
+    margin-bottom: 20px; /* Add margin between dropdowns and button */
+}
+
+.dropdowns select,
+.dropdowns input[type="date"],
+.dropdowns button {
+    font-size: 18px;
+    margin-right: 10px;
+    padding: 10px;
+    border: 2px solid #ccc;
+    border-radius: 25px;
+    background-color: #fff;
+    width: 180px;
+    color: #000;
+    text-align: center;
+}
+
+.dropdowns button {
+    padding: 10px;
+    background-color: #3b40f7;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    width: auto;
+}
+
+table {
+    margin: 0 auto;
+    width: 80%;
+    border-collapse: collapse;
+    background-color: #504E9C;
+    color: white;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+th, td {
+    text-align: center;
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+    height: 30px; /* Adjust the height of table rows as needed */
+}
+
+th {
+    background-color: rgba(66, 147, 195, 0.992);
+    color: #fff;
+}
+
+.footer {
+    background-color: white;
+    color: black;
+    padding: 20px;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+}
+
+.footer a img {
+    height: 50px; /* Adjust height as needed */
+    margin-right: 10px; /* Add spacing between logo and text */
+}
+
+.footer p {
+    margin: 10px 0 0;
+}
+
+a {
+    color: #fff;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.date {
+    margin-left: auto;
+    border-radius: 5px;
+    height: 30px;
+    padding: 5px;
+}
