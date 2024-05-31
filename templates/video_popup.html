@@ -9,9 +9,10 @@
 <body>
     <div class="container">
         <div class="video-feed">
-            <h1 id="class-heading">Video Feed</h1>
-            <img src="{{ url_for('video_feed') }}" width="640" height="480">
-            <img src="../static/img/cam.png">
+            <h1 id="class-heading">Video Started...</h1>
+            <p>Look at the camera for few seconds </p>
+            <img src="{{ url_for('video_feed') }}" width="640" height="480" class="vid">
+            <img src="../static/img/cam.gif">
 
             <button id="stop-button" class="stop-button">Stop Recording</button>
         </div>

@@ -384,6 +384,30 @@ def take_attendance(class_name, subject_name, sid):
         attendance_list_ref.set(new_attendance_list)
 
 
+@app.route('/update_attendance', methods=['POST'])
+def update_attendance():
+    data = request.get_json()
+    class_code = data.get('class_code')
+    date = data.get('date')
+    student_id = data.get('student_id')
+    new_status = data.get('new_status')
+    subject = data.get('subject_name')
+    print(data)
+    print(class_code)
+    print(date)
+    print(student_id)
+    print(new_status)
+    print(subject)
+    if not class_code or not date or not student_id or new_status is None:
+        return jsonify({'error': 'Missing required parameters'}), 400
+
+    # Update the attendance data in the database
+    ref = db.reference(f'{class_code}_{subject}_attendance/{student_id}/{date}')
+    ref.set(1 if new_status == 'Present' else 0)
+
+    return jsonify({'message': 'Attendance updated successfully'})
+
+
 @app.route('/fetch_attendance_details', methods=['GET'])
 def fetch_attendance_details():
     class_name = request.args.get('class')
@@ -553,12 +577,12 @@ def view_attendance():
                         'name': student_name,
                         'enrollment': student_info.get('std_id', 'Unknown'),
                         'status': 'Present' if status == 1 else 'Absent',
-                        'average': student_info.get('average', 'N/A')
                     })
             print(attendance_data)
             return render_template('class_attendance.html', class_name=class_name, subject_name=subject_name, date=date, attendance_data=attendance_data,user_name=user_name, user_email=user_email)
     else:
         return redirect(url_for('login'))
+
 
 @app.route('/video_popup')
 def video_popup():
@@ -595,7 +619,6 @@ def cam():
         return render_template('cam.html', user_name=user_name, user_email=user_email,lecturer_classes=lecturer_classes)
     else:
         return redirect(url_for('login'))
-
 
 
 # Function to fetch classes and modules from Firebase Realtime Database
@@ -775,64 +798,6 @@ def sclass():
         return redirect(url_for('login'))
 
 
-# @app.route('/fetch_student_attendance', methods=['GET'])
-# def fetch_student_attendance():
-#     class_code = request.args.get('class')
-#     date = request.args.get('date')
-#     user_class = session.get('user_name')
-#
-#     if not class_code or not date:
-#         return jsonify({'error': 'Missing parameters'}), 400
-#
-#     # Fetch the attendance data for the given class and date
-#     attendance_ref = db.reference(f'{user_class}_{class_code}_attendance')
-#     if not attendance_ref.get():
-#         # Attendance data collection doesn't exist
-#         return jsonify({'error': f'Either not enrolled or no attendance  for {class_code}'}), 404
-#     attendance_list_ref = db.reference(f'attendance_lists/{user_class}_{class_code}')
-#     attendance_list = attendance_list_ref.get()
-#     print(attendance_list)
-#     if attendance_list and date in attendance_list:
-#         total_class_taken = len(attendance_list)
-#         students_ref = db.reference('student_info').child(user_class).get()
-#         students = []
-#         if students_ref:
-#             for student_id, student_info in students_ref.items():
-#                 class_taken_ref = db.reference(f'{user_class}_{class_code}_attendance/{student_info["std_id"]}')
-#                 class_taken_query = class_taken_ref.get()
-#                 if class_taken_query:
-#                     class_taken = len(class_taken_query)
-#                 else:
-#                     class_taken = 0
-#                 overall_average = (class_taken/total_class_taken)*100 if total_class_taken else 0
-#                 print("average:",(class_taken/total_class_taken)*100 if total_class_taken else 0)
-#                 students.append({
-#                     'std_id': str(student_info['std_id']),
-#                     'name': student_info['name'],
-#                     'enrollment': student_info['std_id'],
-#                     'total_class_taken': total_class_taken,
-#                     'classes_attended': class_taken,
-#                     'overall_average': overall_average
-#                 })
-#
-#         attendance_data = []
-#         for student in students:
-#             std_id = student['std_id']
-#             ref = db.reference(f'{user_class}_{class_code}_attendance/{std_id}/{date}')
-#             data = ref.get()
-#             status = 'Present' if data == 1 else 'Absent'
-#             attendance_data.append({
-#                 'name': student['name'],
-#                 'enrollment': student['std_id'],
-#                 'status': status,
-#                 'total_class_taken': student['total_class_taken'],
-#                 'classes_attended': student['classes_attended'],
-#                 'overall_average': student['overall_average']
-#             })
-#
-#         return jsonify(attendance_data)
-#     else:
-#         return jsonify({'error': f'No attendance data available for {user_class} - {class_code} on {date}'}), 404
 @app.route('/fetch_student_attendance', methods=['GET'])
 def fetch_student_attendance():
     class_code = request.args.get('class')
@@ -869,7 +834,7 @@ def fetch_student_attendance():
                     'enrollment': student_info['std_id'],
                     'total_class_taken': total_class_taken,
                     'classes_attended': class_taken,
-                    'overall_average': overall_average
+                    'overall_average': f"{overall_average:.2f}"
                 })
                 print("info",student_info)
                 print("email",student_info['email'])
@@ -902,6 +867,7 @@ def fetch_student_attendance():
     else:
         return jsonify({'error': f'No attendance data available for {user_class} - {class_code} on {date}'}), 404
 
+
 def send_email(receiver_email, subject, body):
     try:
         msg = MIMEText(body)
@@ -916,5 +882,8 @@ def send_email(receiver_email, subject, body):
     except Exception as e:
         print(f"Error sending email: {e}")
 
+
+if __name__ == '__main__':
+    app.run(debug=True)
 
 

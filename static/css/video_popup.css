@@ -31,6 +31,10 @@ body {
     border-right: 1px solid #ddd;
 }
 
+.vid{
+    display:none;
+}
+
 .predictions {
     flex: 1;
 }

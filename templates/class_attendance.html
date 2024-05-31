@@ -6,6 +6,17 @@
     <title>AttendEz-View Attendance for each Class</title>
     <link rel="stylesheet" href="../static/css/head-n-foot.css">
     <link rel="stylesheet" href="../static/css/class_attendance.css">
+    <style>
+        /* Custom checkbox styles */
+        .toggle-btn {
+            transform: scale(1.5);
+            accent-color: green;
+        }
+
+        .toggle-btn:not(:checked) {
+            accent-color: red;
+        }
+    </style>
 </head>
 <header>
     <div class="logo-div"><a href="/"><img src="../static/img/logo.png" class="logo-img"></a></div>
@@ -25,7 +36,7 @@
         <span class="close" onclick="closeUserModal()">&times;</span>
         <p>Name: {{ user_name }}</p>
         <p>Email: {{ user_email }}</p>
-        <a href="/logout"><button>Logout</button></a>
+        <a href="/logout"><button class="logout-btn">Logout</button></a>
     </div>
 </div>
 
@@ -40,16 +51,25 @@
                 <th>Name</th>
                 <th>Enrollment</th>
                 <th>Status</th>
-                <th></th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody>
             {% for record in attendance_data %}
-            <tr>
+            <tr data-student-id="{{ record.enrollment }}">
                 <td>{{ record.name }}</td>
                 <td>{{ record.enrollment }}</td>
                 <!-- Apply class based on status -->
-                <td class="{% if record.status == 'Present' %}present{% else %}absent{% endif %}">{{ record.status }}</td>
+                <td class="status-td">
+                    <label class="switch">
+                        <input type="checkbox" class="toggle-btn" {% if record.status == 'Present' %}checked{% endif %} disabled>
+                        <span class="slider round"></span>
+                    </label>
+                </td>
+                <td>
+                    <button class="edit-btn">Edit</button>
+                    <button class="save-btn" style="display: none;">Save</button>
+                </td>
             </tr>
             {% endfor %}
         </tbody>
@@ -60,14 +80,56 @@
     <p>Gyalpozhing College of Information and Technology | 2024 | PRJ303 AI A</p>
 </footer>
 <script>
-    // Function to open the user modal
-    function openUserModal() {
-        document.getElementById('userModal').style.display = 'block';
-    }
+    // JavaScript code to handle the edit and save functionality
+    const editButtons = document.querySelectorAll('.edit-btn');
+    const saveButtons = document.querySelectorAll('.save-btn');
+    const toggleButtons = document.querySelectorAll('.toggle-btn');
+    const statusTds = document.querySelectorAll('.status-td');
+    editButtons.forEach((button, index) => {
+        button.addEventListener('click', () => {
+            editButtons[index].style.display = 'none';
+            saveButtons[index].style.display = 'inline-block';
+            toggleButtons[index].disabled = false;
+        });
+    });
 
-    // Function to close the user modal
-    function closeUserModal() {
-        document.getElementById('userModal').style.display = 'none';
+    saveButtons.forEach((button, index) => {
+        button.addEventListener('click', () => {
+            const studentId = button.closest('tr').dataset.studentId;
+            const newStatus = toggleButtons[index].checked ? 'Present' : 'Absent';
+            updateAttendance('{{ class_name }}', '{{ date }}', '{{subject_name}}',studentId, newStatus)
+                .then(() => {
+                    editButtons[index].style.display = 'inline-block';
+                    saveButtons[index].style.display = 'none';
+                    toggleButtons[index].disabled = true;
+                })
+                .catch(error => {
+                    console.error('Error updating attendance:', error);
+                    alert('An error occurred while updating the attendance.');
+                });
+        });
+    });
+
+    async function updateAttendance(classCode, date, subject_name,studentId, newStatus) {
+        const response = await fetch('/update_attendance', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                class_code: classCode,
+                date: date,
+                subject_name: subject_name,
+                student_id: studentId,
+                new_status: newStatus
+            })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(`Error: ${data.error}`);
+        }
+        return data.message;
     }
 </script>
 </html>
