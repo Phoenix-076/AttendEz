@@ -403,9 +403,13 @@ def update_attendance():
 
     # Update the attendance data in the database
     ref = db.reference(f'{class_code}_{subject}_attendance/{student_id}/{date}')
-    ref.set(1 if new_status == 'Present' else 0)
+    if new_status == 'Present':
+        ref.set(1)
+    else:
+        ref.delete()
 
     return jsonify({'message': 'Attendance updated successfully'})
+
 
 
 @app.route('/fetch_attendance_details', methods=['GET'])
@@ -438,20 +442,32 @@ def fetch_attendance_details():
                 'name': student_info['name'],
                 'enrollment': student_info['std_id']
             })
-
+    attendance_list_ref = db.reference(f'attendance_lists/{class_name}_{subject_name}')
+    attendance_list = attendance_list_ref.get()
+    total_class_taken = len(attendance_list)
     attendance_data = []
     for student in students:
         std_id = student['std_id']
+        class_taken_ref = db.reference(f'{class_name}_{subject_name}_attendance/{std_id}')
+        class_taken_query = class_taken_ref.get()
+        if class_taken_query:
+            class_taken = len(class_taken_query)
+        else:
+            class_taken = 0
+        overall_average = (class_taken / total_class_taken) * 100 if total_class_taken else 0
         ref = db.reference(f'{class_name}_{subject_name}_attendance/{std_id}/{date}')
         data = ref.get()
         status = 'Present' if data == 1 else 'Absent'
         attendance_data.append({
             'name': student['name'],
             'enrollment': student['std_id'],
-            'status': status
+            'status': status,
+            'total_class_taken': total_class_taken,
+            'class_attended': class_taken,
+            'overall_average': f'{overall_average:.2f}'
         })
 
-    return render_template('class_attendance_table.html', attendance_data=attendance_data)
+    return render_template('class_attendance_table.html', attendance_data=attendance_data, class_name=class_name, subject=subject_name, date=date)
 
 
 @app.route('/fetch_attendance', methods=['GET'])
@@ -554,7 +570,7 @@ def view_attendance():
             # Use the date passed from the dashboard if available, else use today's date
             if not date:
                 date = datetime.now().strftime('%d-%m-%y')
-            
+
             if not all([class_name, subject_name, date]):
                 return "Missing parameters", 400
 
@@ -563,10 +579,19 @@ def view_attendance():
             students_ref = db.reference('student_info').child(class_name).get()
             print("s ref",students_ref)
             attendance_data = []
-
+            attendance_list_ref = db.reference(f'attendance_lists/{class_name}_{subject_name}')
+            attendance_list = attendance_list_ref.get()
+            total_class_taken = len(attendance_list)
             if students_ref:
                 for student_id, student_info in students_ref.items():
                     sid = student_info.get('std_id')
+                    class_taken_ref = db.reference(f'{class_name}_{subject_name}_attendance/{sid}')
+                    class_taken_query = class_taken_ref.get()
+                    if class_taken_query:
+                        class_taken = len(class_taken_query)
+                    else:
+                        class_taken = 0
+                    overall_average = (class_taken / total_class_taken) * 100 if total_class_taken else 0
                     ref = db.reference(f'{attendance_ref_name}/{sid}/{date}')
                     print(sid)
                     print("attendance",ref.get())
@@ -577,11 +602,70 @@ def view_attendance():
                         'name': student_name,
                         'enrollment': student_info.get('std_id', 'Unknown'),
                         'status': 'Present' if status == 1 else 'Absent',
+                        'total_class_taken': total_class_taken,
+                        'classes_attended': class_taken,
+                        'overall_average': f"{overall_average:.2f}"
                     })
             print(attendance_data)
+            if total_class_taken % 30 == 0:
+                send_report(user_email, f"Attendance Report for {class_name} ({subject_name})",
+                           generate_attendance_report(class_name, subject_name, attendance_data,session.get('user_name')))
+
+            print(f"collection name {class_name}_{subject_name}_attendance")
             return render_template('class_attendance.html', class_name=class_name, subject_name=subject_name, date=date, attendance_data=attendance_data,user_name=user_name, user_email=user_email)
     else:
         return redirect(url_for('login'))
+
+
+def generate_attendance_report(class_name, subject_name, attendance_data, lecturer):
+    report = f"""
+    <html>
+    <body>
+        <p>Dear {lecturer},</p>
+        <p>Please find the attendance report for your class {class_name} ({subject_name}):</p>
+        <table style='width:100%; border-collapse: collapse;'>
+            <tr style='background-color: #f2f2f2;'>
+                <th style='text-align: left; padding: 8px;'>Name</th>
+                <th style='text-align: left; padding: 8px;'>Enrollment</th>
+                <th style='text-align: left; padding: 8px;'>Classes Attended</th>
+                <th style='text-align: left; padding: 8px;'>Total Classes</th>
+                <th style='text-align: left; padding: 8px;'>Average Attendance</th>
+            </tr>
+    """
+
+    for student_record in attendance_data:
+        report += f"""
+            <tr>
+                <td style='padding: 8px;'>{student_record['name']}</td>
+                <td style='padding: 8px;'>{student_record['enrollment']}</td>
+                <td style='padding: 8px;'>{student_record['classes_attended']}</td>
+                <td style='padding: 8px;'>{student_record['total_class_taken']}</td>
+                <td style='padding: 8px;'>{student_record['overall_average']}%</td>
+            </tr>
+        """
+
+    report += """
+        </table>
+        <p>This email is automatically generated when the total classes taken reach a multiple of 10.</p>
+        <p>Best regards,<br>AttendEz Team</p>
+    </body>
+    </html>
+    """
+    return report
+
+def send_report(receiver_email, subject, body):
+    try:
+        msg = MIMEText(body,'html')
+        msg['Subject'] = subject
+        msg['From'] = 'mongarparjeet@gmail.com'
+        msg['To'] = receiver_email
+
+        with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
+            smtp.starttls()
+            smtp.login('mongarparjeet@gmail.com', 'ujbo rusr kcok anud')
+            smtp.send_message(msg)
+    except Exception as e:
+        print(f"Error sending email: {e}")
 
 
 @app.route('/video_popup')
@@ -838,7 +922,7 @@ def fetch_student_attendance():
                 })
                 print("info",student_info)
                 print("email",student_info['email'])
-                if total_class_taken%10 == 0:
+                if total_class_taken % 10 == 0:
                     if overall_average < 90:
                         # Send email to the student
                         try:
