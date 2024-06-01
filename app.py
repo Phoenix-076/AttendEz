@@ -48,7 +48,7 @@ def is_valid_email(email):
 # Load precomputed encodings
 def load_encodings():
     print("Loading Encode File ...")
-    with open('EncodeFile.p', 'rb') as file:
+    with open('encodings1.pickle', 'rb') as file:
         encodeListKnownWithIds = pickle.load(file)
     print("Encode File Loaded")
     return encodeListKnownWithIds

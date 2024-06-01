@@ -30,6 +30,15 @@
 </div>
 
 <body>
+    <div class="loading-container" id="loading-container" style="display: none;">
+        <div class="lds-ring">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+    </div>
+
     <div class="graph"></div>
     <div class="heading">
         <h2 class="title">Attendance Report</h2>
@@ -83,13 +92,20 @@
         let [year, month, day] = selectedDate.split('-');
         selectedDate = `${day}-${month}-${year.slice(2)}`;
 
+        // Show the loading container
+        document.getElementById('loading-container').style.display = 'flex';
+
         fetch(`/fetch_attendance?date=${selectedDate}`)
             .then(response => response.json())
             .then(data => {
                 // Update the table with the fetched data
                 updateAttendanceTable(data);
             })
-            .catch(error => console.error('Error fetching attendance:', error));
+            .catch(error => console.error('Error fetching attendance:', error))
+            .finally(() => {
+                // Hide the loading container
+                document.getElementById('loading-container').style.display = 'none';
+            });
     });
 
     function updateAttendanceTable(data) {
@@ -184,61 +200,58 @@
                 }
             }
         });
-    }
-
+   }
     // Function to download PDF
     function downloadPDF(className, subjectName, date) {
-    fetch(`/fetch_attendance_details?class=${className}&subject=${subjectName}&date=${date}`)
-        .then(response => response.text())
-        .then(htmlContent => {
-            // Create a temporary div element to hold the HTML content
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = htmlContent;
+        fetch(`/fetch_attendance_details?class=${className}&subject=${subjectName}&date=${date}`)
+            .then(response => response.text())
+            .then(htmlContent => {
+                // Create a temporary div element to hold the HTML content
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = htmlContent;
 
-            // Apply CSS styles directly within the <style> tag
-            tempDiv.innerHTML += `
-                <style>
-                    /* Add your CSS styles here */
-                    body {
-                        font-family: Arial, sans-serif;
-                    }
-                    table {
-                        width: 100%;
-                        border-collapse: collapse;
-                        margin-top: 20px;
-                    }
-                    th, td {
-                        border: 1px solid #ddd;
-                        padding: 8px;
-                        text-align: left;
-                        color: black;
-                    }
-                    th {
-                        background-color: #f2f2f2;
-                    }
-                    .present {
-                        color: green;
-                    }
-                    .absent {
-                        color: red;
-                    }
-                </style>
-            `;
+                // Apply CSS styles directly within the <style> tag
+                tempDiv.innerHTML += `
+                    <style>
+                        /* Add your CSS styles here */
+                        body {
+                            font-family: Arial, sans-serif;
+                        }
+                        table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-top: 20px;
+                        }
+                        th, td {
+                            border: 1px solid #ddd;
+                            padding: 8px;
+                            text-align: left;
+                            color: black;
+                        }
+                        th {
+                            background-color: #f2f2f2;
+                        }
+                        .present {
+                            color: green;
+                        }
+                        .absent {
+                            color: red;
+                        }
+                    </style>
+                `;
 
-            // Generate PDF from the modified HTML content
-            html2pdf()
-                .from(tempDiv)
-                .set({
-                    margin: 1,
-                    filename: `Attendance-${className}-${subjectName}-${date}.pdf`,
-                    image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: { scale: 2 },
-                    jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-                })
-                .save();
-        })
-        .catch(error => console.error('Error fetching attendance details:', error));
-}
+                // Generate PDF from the modified HTML content
+                html2pdf()
+                    .from(tempDiv)
+                    .set({
+                        margin: 1,
+                        filename: `Attendance-${className}-${subjectName}-${date}.pdf`,
+                        image: { type: 'jpeg', quality: 0.98 },
+                        html2canvas: { scale: 2 },
+                        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+                    })
+                    .save();
+            })
+            .catch(error => console.error('Error fetching attendance details:', error));
+    }
 </script>
-</html>
-

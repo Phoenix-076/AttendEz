@@ -8,9 +8,9 @@
 
     <title>Class</title>
 </head>
- <body>
+<body>
     <div class="header">
-    <div class="logo-div"><a href="/"><img src="../static/img/logo.png" class="logo-img"></a></div>
+        <div class="logo-div"><a href="/"><img src="../static/img/logo.png" class="logo-img"></a></div>
         <a href="/logout"><button class="logout-btn">Logout</button></a>
     </div>
     <div class="content">
@@ -25,7 +25,19 @@
             <input type="date" class="date" name="date">
             <button id="fetch-attendance-btn">Fetch Attendance</button>
         </div>
-        <table id="attendance-table">
+        <div class="loading-container" id="loading-container" style="display: none;">
+            <div class="lds-ring">
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+            <p>Loading...</p>
+        </div>
+        <div id="no-attendance-message" class="no-attendance-message">
+            <p>Please select a date and subject to view attendance.</p>
+        </div>
+        <table id="attendance-table" style="display: none;">
             <thead>
                 <tr>
                     <th>Name</th>
@@ -42,7 +54,7 @@
         </table>
     </div>
     <div class="footer">
-    <a href="https://www.gcit.edu.bt/"><img src="../static/img/college-logo.png" alt="College Logo" class="logo"></a>
+        <a href="https://www.gcit.edu.bt/"><img src="../static/img/college-logo.png" alt="College Logo" class="logo"></a>
         <p>Gyalpozhing College of Information and Technology | 2024 | PRJ303 AI A</p>
     </div>
 
@@ -52,9 +64,17 @@
             const selectedDate = document.querySelector('.date').value;
 
             if (selectedModule && selectedDate) {
+                // Show the loading container
+                document.getElementById('loading-container').style.display = 'flex';
+                document.getElementById('no-attendance-message').style.display = 'none';
+                document.getElementById('attendance-table').style.display = 'none';
+
                 fetchAttendance(selectedModule, selectedDate);
             } else {
-                alert('Please select a module and a date.');
+                // Show the no attendance message
+                document.getElementById('no-attendance-message').style.display = 'block';
+                document.getElementById('loading-container').style.display = 'none';
+                document.getElementById('attendance-table').style.display = 'none';
             }
         });
 
@@ -69,9 +89,18 @@
             })
             .then(response => response.json())
             .then(data => {
+                // Hide the loading container
+                document.getElementById('loading-container').style.display = 'none';
+
+                // Show the attendance table
+                document.getElementById('attendance-table').style.display = 'table';
+
                 updateAttendanceTable(data);
             })
             .catch(error => {
+                // Hide the loading container
+                document.getElementById('loading-container').style.display = 'none';
+
                 console.error('Error fetching attendance:', error);
             });
         }
@@ -95,7 +124,6 @@
                         <td>${student.total_class_taken}</td>
                         <td>${student.classes_attended}</td>
                         <td>${student.overall_average}%</td>
-
                     `;
                     tableBody.appendChild(row);
                 });
@@ -103,7 +131,6 @@
                 console.error('Unexpected data format:', data);
             }
         }
-
     </script>
 </body>
 </html>
